@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [manualCNY, setManualCNY] = useState<string>('');
   const [userApiKey, setUserApiKey] = useState<string>('');
   const [showApiKeyInput, setShowApiKeyInput] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   
   const [currency, setCurrency] = useState<Currency>(Currency.USD);
   const [localShippingCurrency, setLocalShippingCurrency] = useState<Currency>(Currency.USD);
@@ -88,8 +89,17 @@ const App: React.FC = () => {
     }
 
     setLoadingRates(true);
+    setApiError(null);
     try {
       const data = await fetchCurrentExchangeRates(effectiveApiKey);
+      
+      if (data.error) {
+        setApiError(data.error);
+        setIsManualUSD(true);
+        setIsManualCNY(true);
+        return;
+      }
+
       setFetchedRates(data.rates);
       setRateSources(data.sources);
       setLastUpdated(new Date());
@@ -101,9 +111,9 @@ const App: React.FC = () => {
       // Turn off manual mode if we successfully fetched rates
       setIsManualUSD(false);
       setIsManualCNY(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to load rates:", error);
-      // If API fails, switch to manual mode
+      setApiError(error.message || "환율 정보를 가져오는 중 알 수 없는 오류가 발생했습니다.");
       setIsManualUSD(true);
       setIsManualCNY(true);
     } finally {
@@ -355,20 +365,30 @@ const App: React.FC = () => {
                   <input 
                     type="password"
                     value={userApiKey}
-                    onChange={(e) => setUserApiKey(e.target.value)}
+                    onChange={(e) => {
+                      setUserApiKey(e.target.value);
+                      setApiError(null);
+                    }}
                     placeholder="AI Studio에서 발급받은 API 키를 입력하세요"
                     className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition-shadow"
                   />
                   <button 
                     onClick={() => {
                       loadRates();
-                      setShowApiKeyInput(false);
                     }}
                     className="px-4 py-2 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-sm"
                   >
                     적용
                   </button>
                 </div>
+                {apiError && (
+                  <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2">
+                    <Info size={14} className="text-red-500 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-red-600 leading-tight">
+                      {apiError}
+                    </p>
+                  </div>
+                )}
                 <p className="text-[10px] text-gray-400 mt-2">
                   * 입력하신 API 키는 브라우저 메모리에만 유지되며 서버에 저장되지 않습니다.
                 </p>

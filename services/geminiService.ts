@@ -4,6 +4,7 @@ import { ExchangeRates, GroundingSource } from "../types";
 interface ExchangeRateResponse {
   rates: ExchangeRates;
   sources: GroundingSource[];
+  error?: string;
 }
 
 export const fetchCurrentExchangeRates = async (
@@ -71,12 +72,24 @@ export const fetchCurrentExchangeRates = async (
 
     return { rates, sources };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching exchange rates:", error);
-    // Return fallback values if API fails
+    
+    let errorMessage = "환율 정보를 가져오지 못했습니다.";
+    if (error.message?.includes("400") || error.message?.includes("INVALID_ARGUMENT")) {
+      errorMessage = "API 키가 올바르지 않거나, 해당 키에서 'Google 검색' 도구를 사용할 수 없습니다. (결제 수단 등록 확인 필요)";
+    } else if (error.message?.includes("404") || error.message?.includes("NOT_FOUND")) {
+      errorMessage = "모델을 찾을 수 없습니다. API 키가 최신 모델(Gemini 3)을 지원하는지 확인하세요.";
+    } else if (error.message?.includes("429")) {
+      errorMessage = "API 호출 한도를 초과했습니다. 잠시 후 다시 시도하세요.";
+    } else {
+      errorMessage = error.message || errorMessage;
+    }
+
     return {
       rates: { USD: 1400, CNY: 195 },
-      sources: []
+      sources: [],
+      error: errorMessage
     };
   }
 };
