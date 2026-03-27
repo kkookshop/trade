@@ -1,0 +1,5 @@
+{
+  "name": "수입원가계산기",
+  "description": "Calculate the landed cost of imported products from USD or CNY to KRW, including forwarding, logistics, and additional fees, using real-time exchange rates.",
+  "requestFramePermissions": []
+}
