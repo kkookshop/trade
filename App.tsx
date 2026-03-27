@@ -261,16 +261,25 @@ const App: React.FC = () => {
     const onlineProfitPerUnit = vatIncludedUnitCost * oMargin;
     const onlineTotalProfit = onlineProfitPerUnit * qty;
 
+    // Break-even Quantity: Total Cost / Selling Price
+    const totalCost = breakdown.totalCostKRW;
+    const wholesaleBreakEvenQty = wholesalePrice > 0 ? Math.ceil(totalCost / wholesalePrice) : 0;
+    const retailBreakEvenQty = retailPrice > 0 ? Math.ceil(totalCost / retailPrice) : 0;
+    const onlineBreakEvenQty = onlinePrice > 0 ? Math.ceil(totalCost / onlinePrice) : 0;
+
     return {
       vatIncludedUnitCost,
       wholesalePrice,
       wholesaleTotalProfit,
+      wholesaleBreakEvenQty,
       retailPrice,
       retailTotalProfit,
+      retailBreakEvenQty,
       onlinePrice,
-      onlineTotalProfit
+      onlineTotalProfit,
+      onlineBreakEvenQty
     };
-  }, [breakdown.unitCostKRW, quantity, wholesaleMargin, retailMargin, retailFee, onlineTargetMargin, onlineSiteFee, onlineOtherFee]);
+  }, [breakdown.unitCostKRW, breakdown.totalCostKRW, quantity, wholesaleMargin, retailMargin, retailFee, onlineTargetMargin, onlineSiteFee, onlineOtherFee]);
 
 
   const localShippingCurrencySymbol = useMemo(() => {
@@ -1152,6 +1161,14 @@ const App: React.FC = () => {
                        <div className="text-2xl font-bold text-indigo-900 mb-2">
                           ₩ {(sellingPrice.wholesalePrice || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                        </div>
+                       <div className="mb-3">
+                          <div className="text-[10px] text-indigo-600 font-bold flex items-center gap-1 mb-1">
+                             <TrendingUp size={10} /> 손익분기점
+                          </div>
+                          <div className="text-sm font-bold text-gray-900">
+                             {sellingPrice.wholesaleBreakEvenQty.toLocaleString()}개 판매 시 원가 회수
+                          </div>
+                       </div>
                        <div className="text-xs text-gray-500 space-y-1 bg-gray-50 p-2 rounded-lg mb-3">
                           <div className="flex justify-between">
                              <span>원가+부가세</span>
@@ -1186,6 +1203,14 @@ const App: React.FC = () => {
                        <div className="text-2xl font-bold text-pink-700 mb-2">
                           ₩ {(sellingPrice.retailPrice || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                        </div>
+                       <div className="mb-3">
+                          <div className="text-[10px] text-pink-600 font-bold flex items-center gap-1 mb-1">
+                             <TrendingUp size={10} /> 손익분기점
+                          </div>
+                          <div className="text-sm font-bold text-gray-900">
+                             {sellingPrice.retailBreakEvenQty.toLocaleString()}개 판매 시 원가 회수
+                          </div>
+                       </div>
                        <div className="text-xs text-gray-500 space-y-1 bg-gray-50 p-2 rounded-lg mb-3">
                           <div className="flex justify-between">
                              <span>원가+부가세</span>
@@ -1219,6 +1244,14 @@ const App: React.FC = () => {
                        </h3>
                        <div className="text-2xl font-bold text-green-700 mb-2">
                           ₩ {(sellingPrice.onlinePrice || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                       </div>
+                       <div className="mb-3">
+                          <div className="text-[10px] text-green-600 font-bold flex items-center gap-1 mb-1">
+                             <TrendingUp size={10} /> 손익분기점
+                          </div>
+                          <div className="text-sm font-bold text-gray-900">
+                             {sellingPrice.onlineBreakEvenQty.toLocaleString()}개 판매 시 원가 회수
+                          </div>
                        </div>
                        <div className="text-xs text-gray-500 space-y-1 bg-gray-50 p-2 rounded-lg mb-3">
                           <div className="flex justify-between">
