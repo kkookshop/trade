@@ -23,10 +23,17 @@ export const fetchCurrentExchangeRates = async (
     const response = await ai.models.generateContent({
       model: modelId,
       contents: `What is the current Trading Base Rate (매매기준율) for the following currencies to KRW today? Please provide the accurate value based on Naver Finance.
-      Currencies: ${currencies.join(", ")}
-      Return the result in the following JSON format: { "CURRENCY_CODE": number }`,
+      Currencies: ${currencies.join(", ")}`,
       config: {
         tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: currencies.reduce((acc, curr) => {
+            acc[curr] = { type: Type.NUMBER };
+            return acc;
+          }, {} as any)
+        }
       }
     });
 
@@ -54,16 +61,12 @@ export const fetchCurrentExchangeRates = async (
 
     try {
       if (response.text) {
-        // Extract JSON from text response
-        const jsonMatch = response.text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          // Merge parsed rates with defaults
-          rates = { ...rates, ...parsed };
-        }
+        const parsed = JSON.parse(response.text);
+        // Merge parsed rates with defaults
+        rates = { ...rates, ...parsed };
       }
     } catch (e) {
-      console.warn("Failed to parse JSON response from Gemini text, using fallback.", e);
+      console.warn("Failed to parse JSON response from Gemini, using fallback.", e);
     }
 
     return { rates, sources };

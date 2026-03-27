@@ -94,9 +94,13 @@ const App: React.FC = () => {
       setRateSources(data.sources);
       setLastUpdated(new Date());
       
-      // Initialize manual rates with fetched rates if they are empty
-      if (!manualUSD) setManualUSD(data.rates.USD.toString());
-      if (!manualCNY) setManualCNY(data.rates.CNY.toString());
+      // Update manual rates with fetched rates
+      setManualUSD(data.rates.USD.toString());
+      setManualCNY(data.rates.CNY.toString());
+      
+      // Turn off manual mode if we successfully fetched rates
+      setIsManualUSD(false);
+      setIsManualCNY(false);
     } catch (error) {
       console.error("Failed to load rates:", error);
       // If API fails, switch to manual mode
@@ -462,7 +466,7 @@ const App: React.FC = () => {
                   환율 새로고침
                 </button>
                 
-                {!process.env.GEMINI_API_KEY && (
+                {!userApiKey && (
                   <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
                     <a 
                       href="https://finance.naver.com/marketindex/" 
